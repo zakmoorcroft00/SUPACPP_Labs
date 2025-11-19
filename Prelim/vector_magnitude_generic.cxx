@@ -42,6 +42,4 @@ int main() {
               << " => Magnitude = " << mag_ref << "\n";
     return 0;
 }
-git add hello_world.cxx vector_magnitude.cxx vector_magnitude_generic.cxx
-git commit -m "Prelim tasks 1–3: Hello World, fixed (7.5,3.4) magnitude, generic 2D magnitude with user input + verification"
-git push
+
