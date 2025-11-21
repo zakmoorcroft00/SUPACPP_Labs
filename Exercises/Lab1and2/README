@@ -1,0 +1,12 @@
+The files that run the end task are:
+1. CustomFunctions.h
+2. CustomFunctions.cxx
+3. AnalyseData_5.cxx
+4. Makefile
+
+I have pushed and committed other files but I now understand I wasn't supposed to do that.
+With these files it shuld just be a simple 'make' in terminal. All other instructions
+will be given out by terminal. I have tried to comment as much as I can.
+
+Zak Moorcroft
+
