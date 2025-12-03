@@ -1,0 +1,18 @@
+The following files are required for this assignment:
+- FiniteFunctions.h
+- FiniteFunctions.cxx
+- CustomDistributions.h
+- CustomDistributions.cxx
+- CalculatePi.cxx
+- MysteryData23232.txt
+- Makefile
+
+For the first part you will need to run 'make'. Then you will need to run ./CustomDistributions in the terminal.
+This will produce three graphs, one being the function I believe is the one closest to the mystery data. This graph
+will have the Metropolis algorthim applied to it.
+
+For the bonus part, you will need to run 'make CalculatePi'. Then run ./CalculatePi [radius] [number of Metropolis samples]
+and you will get a calculation of pi based on the inputs you provided.
+
+I have also included the MysteryData23232.txt as I did not know whether or not you would need to generate it.
+

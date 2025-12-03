@@ -3,6 +3,8 @@
 #include <vector>
 #include "FiniteFunctions.h"
 #include <filesystem> //To check extensions in a nice way
+#include <cmath>
+#include <random> // For random number generation
 
 #include "gnuplot-iostream.h" //Needed to produce plots (not part of the course) 
 
@@ -61,10 +63,42 @@ double FiniteFunction::callFunction(double x) {return this->invxsquared(x);}; //
 Integration by hand (output needed to normalise function when plotting)
 ###################
 */ 
+// double FiniteFunction::integrate(int Ndiv){ //private
+//   //ToDo write an integrator
+//   return -99;  
+// }
+
+// Not sure what to add but could use a basic trapezoidal rule here?
+
 double FiniteFunction::integrate(int Ndiv){ //private
-  //ToDo write an integrator
-  return -99;  
+  // Simple trapezoidal-rule integrator over [m_RMin, m_RMax]
+  double range = m_RMax - m_RMin;
+  double dx    = range / static_cast<double>(Ndiv);
+
+  double integral = 0.0;
+
+  // Trapezoidal rule:
+  // Int f(x) dx ≈ Sum (f(x_i) + f(x_{i+1})) * dx / 2
+  double x_left  = m_RMin;
+  double f_left  = this->callFunction(x_left);
+
+  for (int i = 0; i < Ndiv; ++i) {
+      double x_right = x_left + dx;
+      double f_right = this->callFunction(x_right);
+
+      integral += 0.5 * (f_left + f_right) * dx;
+
+      // Shift for next step
+      x_left = x_right;
+      f_left = f_right;
+  }
+
+  return integral;
 }
+
+
+
+// The above is not right and where the problem is. All values getting divided by -99 or soemthing??
 double FiniteFunction::integral(int Ndiv) { //public
   if (Ndiv <= 0){
     std::cout << "Invalid number of divisions for integral, setting Ndiv to 1000" <<std::endl;
@@ -173,6 +207,77 @@ std::vector< std::pair<double,double> > FiniteFunction::makeHist(std::vector<dou
   }
   return histdata;
 }
+
+// Metropolis sampler: returns a vector of x-values drawn from this function
+std::vector<double> FiniteFunction::sampleMetropolis( int    Nsamples,  int    burnIn, int    thin,  double proposalSigma  ) // Same as .h
+{
+  
+  std::vector<double> samples;                 // container for accepted, thinned samples
+  samples.reserve(Nsamples);                  // avoid repeated reallocations
+
+  std::random_device rd;                      // non-deterministic seed source
+  std::mt19937 gen(rd());                     // Mersenne Twister RNG, seeded by rd
+
+  std::uniform_real_distribution<double> uniX( m_RMin, m_RMax );  // uniform on [rangeMin, rangeMax]
+  std::uniform_real_distribution<double> uni01( 0.0, 1.0 );       // uniform on [0,1] for accept/reject
+
+  double x = uniX(gen);                       // initial point x_0 chosen uniformly in the range
+
+  std::normal_distribution<double> proposal( 0.0, proposalSigma ); // proposal step ~ N(0, sigma)
+
+  int totalSteps = burnIn + Nsamples * thin;  // total Metropolis steps including burn-in and thinning
+
+  for (int step = 0; step < totalSteps; ++step) {   // loop over all Metropolis steps
+
+    double y = x + proposal(gen);             // propose y ~ N(x, sigma) by adding a normal step
+
+    if (y < m_RMin || y > m_RMax) {           // if proposal falls outside function domain
+      // reject automatically by doing nothing
+    } else {
+      double fx = this->callFunction(x);      // evaluate f(x_i)
+      double fy = this->callFunction(y);      // evaluate f(y)
+
+      double A = 0.0;                         // acceptance probability
+
+      if (fx <= 0.0 && fy <= 0.0) {           // if both values are zero or negative
+        A = 0.0;                              // never move (very unlikely if f is a pdf)
+      }
+      else if (fx <= 0.0 && fy > 0.0) {       // if current point has ~0 weight but proposal is positive
+        A = 1.0;                              // always accept move away from zero
+      }
+      else {                                  // usual case: fx > 0
+        double ratio = fy / fx;               // compute f(y)/f(x_i)
+        if (ratio > 1.0) ratio = 1.0;         // A = min(ratio, 1)
+        if (ratio < 0.0) ratio = 0.0;         // guard against tiny negative round-off
+        A = ratio;                            // acceptance probability
+      }
+
+      double T = uni01(gen);                  // uniform random T in [0,1]
+
+      if (T < A) {                            // accept move with probability A
+        x = y;                                // set x_{i+1} = y
+      }
+      // else: reject, keep x_{i+1} = x (do nothing)
+    }
+
+    if (step >= burnIn) {                     // only start recording after burn-in
+      int idx = step - burnIn;               // index of post-burn-in step
+      if (idx % thin == 0) {                 // keep only every 'thin'-th step
+        samples.push_back(x);                // store current x as a sample
+        if ((int)samples.size() >= Nsamples) // stop if we reached requested count
+          break;                             // break out of the loop
+      }
+    }
+  }
+
+  return samples;                             // return vector of sampled x-values
+}
+
+
+
+
+
+
 
 //Function which handles generating the gnuplot output, called in destructor
 //If an m_plot... flag is set, the we must have filled the related data vector

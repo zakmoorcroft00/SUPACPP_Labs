@@ -12,7 +12,9 @@ public:
   ~FiniteFunction(); //Destructor
   double rangeMin(); //Low end of the range the function is defined within
   double rangeMax(); //High end of the range the function is defined within
-  double integral(int Ndiv = 1000); 
+  double integral(int Ndiv = 1000);
+  // Sample from this function using the Metropolis algorithm
+  std::vector<double> sampleMetropolis( int    Nsamples, int    burnIn, int    thin, double proposalSigma); // number output samples, inital steps to discard, keep 1 in, width of proposed norm
   std::vector< std::pair<double,double> > scanFunction(int Nscan = 1000); //Scan over function to plot it (slight hack needed to plot function in gnuplot)
   void setRangeMin(double RMin);
   void setRangeMax(double RMax);
