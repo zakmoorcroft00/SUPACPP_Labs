@@ -264,12 +264,3 @@ int main(int argc, char **argv)
 
     return 0;                                                   // success
 }
-git add Makefile
-git add CustomDistributions.cxx
-git add FiniteFunctions.h
-git add FiniteFunctions.cxx
-git add CalculatePi.cxx
-git add README
-git add MysteryData23232.txt
-
-git commit -m "***ASSIGNMENT 2 SUBMISSION***"
